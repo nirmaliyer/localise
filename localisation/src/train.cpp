@@ -71,8 +71,8 @@ void read(string filename, Float_t &theta, Float_t &phi, Float_t &x_mom, Float_t
 //Train function
 void trainLocalisation() {
     ofstream file;
-    string filename_iter = "NN_data_LEAKY_RELU_2L_40400_01.dat";
-    string filename_output = "testlocalisation_LEAKY_RELU_2L_40400_01.nn";
+    string filename_iter = "NN_data_LEAKY_RELU.dat";
+    string filename_output = "testlocalisation_LEAKY_RELU.nn";
     file.open(filename_iter.c_str());
 
     //Running parameters
@@ -123,8 +123,8 @@ void trainLocalisation() {
     vector <double> output;
     double theta2, phi2;
       
-    while (true) {
-        double limit_error;
+    while (iter <= nr_runs) {
+      
 	t = a[iter];
         filename_database = path_database + "Hits" + to_string(t) + suffix_database;
         read(filename_database, theta, phi, xmom, ymom, zmom ,det,Nr_Hits);
@@ -137,7 +137,8 @@ void trainLocalisation() {
             iter++;
 
 	    //Print out seleted data and size of Nr_Hits
-	    cout << t << endl;
+	    cout << "iter = " << iter << endl;
+	    cout << "t = " << t << endl;
             cout << Nr_Hits.size() << endl;
 
             output = {theta2, phi2};
@@ -148,17 +149,14 @@ void trainLocalisation() {
 
             std::vector<double> res;
             NN.getResults(res);
-            std::cout << "\nGiven output : " << output[0] << ", " << output[1];
+            std::cout << "Given output : " << output[0] << ", " << output[1];
             std::cout << "\nResult : " << res[0] << ", " << res[1];
-            std::cout << "\nError : " << NN.getError() << "\n";
+            std::cout << "\nError : " << NN.getError() << "\n\n";
             file << theta << "    " << phi << "    " << res[0] << "    " << res[1] << "    " << NN.getError() << endl;           
 	}
         det.clear();
         Nr_Hits.clear();
-        if(iter > nr_runs){
-	  NN.writeNNToFile(filename_output.c_str());
-          break;
-	}
+	NN.writeNNToFile(filename_output.c_str());
     }
     file << iter << endl;
     file.close();   
