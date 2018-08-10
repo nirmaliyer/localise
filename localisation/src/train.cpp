@@ -71,8 +71,8 @@ void read(string filename, Float_t &theta, Float_t &phi, Float_t &x_mom, Float_t
 //Train function
 void trainLocalisation() {
     ofstream file;
-    string filename_iter = "NN_data_LEAKY_RELU.dat";
-    string filename_output = "testlocalisation_LEAKY_RELU.nn";
+    string filename_iter = "NN_data_RELU.dat";
+    string filename_output = "testlocalisation_RELU.nn";
     file.open(filename_iter.c_str());
 
     //Running parameters
@@ -108,7 +108,7 @@ void trainLocalisation() {
     topo = { 162, 2 };
     eta = { 0.2, 0.2 };
     alpha = { 0.5, 0.5 };
-    actFuns = { LEAKY_RELU, LEAKY_RELU };
+    actFuns = { RELU, RELU };
    
     //Initialize Neural Network
     NeuralNetwork NN;
@@ -123,7 +123,7 @@ void trainLocalisation() {
     vector <double> output;
     double theta2, phi2;
       
-    while (iter <= nr_runs) {
+    while (true) {
       
 	t = a[iter];
         filename_database = path_database + "Hits" + to_string(t) + suffix_database;
@@ -134,7 +134,6 @@ void trainLocalisation() {
         phi2 = phi/360+0.5;
        
         if(zmom>0.00001){
-            iter++;
 
 	    //Print out seleted data and size of Nr_Hits
 	    cout << "iter = " << iter << endl;
@@ -154,9 +153,16 @@ void trainLocalisation() {
             std::cout << "\nError : " << NN.getError() << "\n\n";
             file << theta << "    " << phi << "    " << res[0] << "    " << res[1] << "    " << NN.getError() << endl;           
 	}
+	
         det.clear();
         Nr_Hits.clear();
-	NN.writeNNToFile(filename_output.c_str());
+	
+	if(iter > nr_runs){
+	  NN.writeNNToFile(filename_output.c_str());
+	  break;
+	}
+
+	iter++;
     }
     file << iter << endl;
     file.close();   
