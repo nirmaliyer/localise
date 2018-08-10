@@ -29,18 +29,14 @@ void draw(){
   in.open("/home/joan/git_joan_localise/localise/localisation/build/NN_data_LEAKY_RELU_2L_40400_01.dat", ios::in);
 
   //Create temporary use variables
-  Float_t real_t, real_p, out_t, out_p, err, title_r, title_o;
+  Float_t real_t, real_p, out_t, out_p, err;
  
-  //in >> title_r >> real_t >> real_p >> title_o >> out_t >> out_p >> err;
-  //Start reading from the 2n line of the file
   Int_t nlines = 0;
   while (1){
     //Get the five columns
     in >> real_t >> real_p >> out_t >> out_p >> err;
     if(!in.good()) break;
     if(nlines < nr_iter + 1)
-      //Print the read data
-      //printf("real theta=%8f, real phi=%8f, out theta=%8f, out phi=%8f, error=%8f\n", real_t, real_p, out_t, out_p, err);
     //Fill the data vectors
     real_theta[nlines] = real_t;
     real_phi[nlines]   = real_p;
@@ -49,10 +45,7 @@ void draw(){
     error[nlines]      = err;
     nlines++;
   }
-
-  //for(Int_t i=0; i < nr_iter; i++)
-  //cout << iter[i] << " " << real_theta[i] << " " << real_phi[i] << " " << out_theta[i] << " " << out_phi[i] << " " << error[i] << endl;
-
+  
   cout << nlines << endl;
  
   //Declare graph

@@ -6,7 +6,6 @@
 #include "TFile.h"
 #include "TBranch.h"
 #include "TTree.h"
-#include "TVectorT.h"
 
 #include <iostream>
 #include <vector>
@@ -78,7 +77,13 @@ void trainLocalisation() {
 
     //Running parameters
     int nr_runs = 40400;
-    double error_limit = 0.01;
+
+    //Random shuffle vector
+    int a[nr_runs];
+    for(int i = 0; i < nr_runs; i++)
+      a[i] = i;
+    
+    random_shuffle(&a[0],&a[nr_runs-1]);
     
     string path_database;
     path_database = "/media/nirmal/B856D99F56D95EA6/SPHiNX/localisation_runs/05_01_smallergrid_withContourShield/Hits/";
@@ -97,8 +102,8 @@ void trainLocalisation() {
     std::vector<double> eta;
     std::vector<double> alpha;
     std::vector<ActivationFunction> actFuns;
-
     vector<double> det, Nr_Hits;
+    
     //Backpropagation algorithm
     topo = { 162, 2 };
     eta = { 0.2, 0.2 };
@@ -109,31 +114,34 @@ void trainLocalisation() {
     NeuralNetwork NN;
     NN.init(topo, eta, alpha, actFuns);
    
-    //Write heading to the phile
-    //file << "real: theta    phi    output: theta    phi    error" << endl;
-
+    //Iteration counter
     int iter = 0;
-    int t = 0;
+    //Data selector
+    int t;
+
+    //Reading vectors and variables
     vector <double> output;
     double theta2, phi2;
       
     while (true) {
-      //int t = rand() % 40401;
         double limit_error;
-
+	t = a[iter];
         filename_database = path_database + "Hits" + to_string(t) + suffix_database;
         read(filename_database, theta, phi, xmom, ymom, zmom ,det,Nr_Hits);
- 
+
+	//Normalize angle variables
         theta2 = theta/90;
         phi2 = phi/360+0.5;
        
         if(zmom>0.00001){
             iter++;
+
+	    //Print out seleted data and size of Nr_Hits
+	    cout << t << endl;
             cout << Nr_Hits.size() << endl;
 
             output = {theta2, phi2};
-            limit_error = error_limit;
-           
+
             NN.feedForward(Nr_Hits);
    
             NN.backProp(output);
@@ -143,21 +151,14 @@ void trainLocalisation() {
             std::cout << "\nGiven output : " << output[0] << ", " << output[1];
             std::cout << "\nResult : " << res[0] << ", " << res[1];
             std::cout << "\nError : " << NN.getError() << "\n";
-            //getchar();
-            //if (iter%100 == 0) {
-              file << theta << "    " << phi << "    " << res[0] << "    " << res[1] << "    " << NN.getError() << endl;
-              //}           
-            if (NN.getError() < limit_error) {
-                std::cout << "\nNN converged in " << iter << " iterations!\n";
-                NN.writeNNToFile(filename_output.c_str());
-                break;
-            }
-        }
+            file << theta << "    " << phi << "    " << res[0] << "    " << res[1] << "    " << NN.getError() << endl;           
+	}
         det.clear();
         Nr_Hits.clear();
-        if(t > nr_runs)
+        if(iter > nr_runs){
+	  NN.writeNNToFile(filename_output.c_str());
           break;
-        t++;
+	}
     }
     file << iter << endl;
     file.close();   
