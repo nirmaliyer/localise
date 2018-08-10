@@ -17,7 +17,7 @@ using namespace std;
 void draw(){
 
   //Declare value vectors
-  Int_t nr_iter = 47;
+  Int_t nr_iter = 31397;
   Float_t iter[nr_iter], real_theta[nr_iter], real_phi[nr_iter], out_theta[nr_iter], out_phi[nr_iter], error[nr_iter];
  
   //Fill iterations vector
@@ -26,7 +26,7 @@ void draw(){
  
   //Open data file
   ifstream in;
-  in.open("/home/joan/git_joan_localise/localise/localisation/build/NN_data_LEAKY_RELU_2L_40400_01.dat", ios::in);
+  in.open("/home/joan/git_joan_localise/localise/localisation/build/NN_data_TANHL.dat", ios::in);
 
   //Create temporary use variables
   Float_t real_t, real_p, out_t, out_p, err;

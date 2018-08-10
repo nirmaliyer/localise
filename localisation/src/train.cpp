@@ -71,8 +71,8 @@ void read(string filename, Float_t &theta, Float_t &phi, Float_t &x_mom, Float_t
 //Train function
 void trainLocalisation() {
     ofstream file;
-    string filename_iter = "NN_data_RELU.dat";
-    string filename_output = "testlocalisation_RELU.nn";
+    string filename_iter = "NN_data_SIGMOID.dat";
+    string filename_output = "testlocalisation_SIGMOID.nn";
     file.open(filename_iter.c_str());
 
     //Running parameters
@@ -108,7 +108,7 @@ void trainLocalisation() {
     topo = { 162, 2 };
     eta = { 0.2, 0.2 };
     alpha = { 0.5, 0.5 };
-    actFuns = { RELU, RELU };
+    actFuns = { SIGMOID, SIGMOID };
    
     //Initialize Neural Network
     NeuralNetwork NN;
@@ -116,6 +116,8 @@ void trainLocalisation() {
    
     //Iteration counter
     int iter = 0;
+    //Writen events counter
+    int lines = 0;
     //Data selector
     int t;
 
@@ -134,37 +136,37 @@ void trainLocalisation() {
         phi2 = phi/360+0.5;
        
         if(zmom>0.00001){
+	  lines++;
+	  //Print out seleted data and size of Nr_Hits
+	  cout << "iter = " << iter << endl;
+	  cout << "t = " << t << endl;
+	  cout << Nr_Hits.size() << endl;
+	  
+	  output = {theta2, phi2};
 
-	    //Print out seleted data and size of Nr_Hits
-	    cout << "iter = " << iter << endl;
-	    cout << "t = " << t << endl;
-            cout << Nr_Hits.size() << endl;
-
-            output = {theta2, phi2};
-
-            NN.feedForward(Nr_Hits);
-   
-            NN.backProp(output);
-
-            std::vector<double> res;
-            NN.getResults(res);
-            std::cout << "Given output : " << output[0] << ", " << output[1];
-            std::cout << "\nResult : " << res[0] << ", " << res[1];
-            std::cout << "\nError : " << NN.getError() << "\n\n";
-            file << theta << "    " << phi << "    " << res[0] << "    " << res[1] << "    " << NN.getError() << endl;           
+	  NN.feedForward(Nr_Hits);
+	  
+	  NN.backProp(output);
+	    
+	  std::vector<double> res;
+	  NN.getResults(res);
+	  std::cout << "Given output : " << output[0] << ", " << output[1];
+	  std::cout << "\nResult : " << res[0] << ", " << res[1];
+	  std::cout << "\nError : " << NN.getError() << "\n\n";
+	  file << theta << "    " << phi << "    " << res[0] << "    " << res[1] << "    " << NN.getError() << endl;           
 	}
 	
         det.clear();
         Nr_Hits.clear();
+
+	iter++;
 	
 	if(iter > nr_runs){
 	  NN.writeNNToFile(filename_output.c_str());
 	  break;
 	}
-
-	iter++;
     }
-    file << iter << endl;
+    file << lines << endl;
     file.close();   
 }
 
