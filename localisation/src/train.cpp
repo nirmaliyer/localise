@@ -1,4 +1,5 @@
 /*
+** name: train.cpp
 ** author : Joan Bachs Esteban
 ** email : bachsjoan@gmail.com
 */
@@ -71,8 +72,8 @@ void read(string filename, Float_t &theta, Float_t &phi, Float_t &x_mom, Float_t
 //Train function
 void trainLocalisation() {
     ofstream file;
-    string filename_iter = "NN_data_SIGMOID.dat";
-    string filename_output = "testlocalisation_SIGMOID.nn";
+    string filename_iter = "NN_data_TANHL_3.dat";
+    string filename_output = "testlocalisation_TANHL_3.nn";
     file.open(filename_iter.c_str());
 
     //Running parameters
@@ -105,10 +106,10 @@ void trainLocalisation() {
     vector<double> det, Nr_Hits;
     
     //Backpropagation algorithm
-    topo = { 162, 2 };
-    eta = { 0.2, 0.2 };
-    alpha = { 0.5, 0.5 };
-    actFuns = { SIGMOID, SIGMOID };
+    topo = { 162, 162, 2 };
+    eta = { 0.2, 0.2, 0.2 };
+    alpha = { 0.5, 0.5, 0.5 };
+    actFuns = { TANHL, TANHL, TANHL };
    
     //Initialize Neural Network
     NeuralNetwork NN;
