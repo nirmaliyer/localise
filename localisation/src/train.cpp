@@ -42,7 +42,7 @@ void read(string filename, Float_t &theta, Float_t &phi, Float_t &x_mom, Float_t
         t3->GetEntry(i);
     }
     //Only use starting positions on the sphere
-    if(z_mom>0.000001){
+    if(z_mom>0.2){
         TTree *t6 = (TTree*) f1.Get("one_hit");
         t6->SetBranchAddress("detector",&help_det);
         t6->SetBranchAddress("Nr_Hits",&help_NrHits);
@@ -72,8 +72,8 @@ void read(string filename, Float_t &theta, Float_t &phi, Float_t &x_mom, Float_t
 //Train function
 void trainLocalisation() {
     ofstream file;
-    string filename_iter = "NN_data_TANHL_3.dat";
-    string filename_output = "testlocalisation_TANHL_3.nn";
+    string filename_iter = "NN_data_TANHL_2.dat";
+    string filename_output = "testlocalisation_TANHL_2.nn";
     file.open(filename_iter.c_str());
 
     //Running parameters
@@ -106,10 +106,10 @@ void trainLocalisation() {
     vector<double> det, Nr_Hits;
     
     //Backpropagation algorithm
-    topo = { 162, 162, 2 };
-    eta = { 0.2, 0.2, 0.2 };
-    alpha = { 0.5, 0.5, 0.5 };
-    actFuns = { TANHL, TANHL, TANHL };
+    topo = { 162, 2 };
+    eta = { 0.2, 0.2 };
+    alpha = { 0.5, 0.5 };
+    actFuns = { TANHL, TANHL };
    
     //Initialize Neural Network
     NeuralNetwork NN;
@@ -124,7 +124,7 @@ void trainLocalisation() {
 
     //Reading vectors and variables
     vector <double> output;
-    double theta2, phi2;
+    double xmom2, ymom2;
       
     while (true) {
       
@@ -132,18 +132,18 @@ void trainLocalisation() {
         filename_database = path_database + "Hits" + to_string(t) + suffix_database;
         read(filename_database, theta, phi, xmom, ymom, zmom ,det,Nr_Hits);
 
-	//Normalize angle variables
-        theta2 = theta/90;
-        phi2 = phi/360+0.5;
+	//Normalize cartesian variables
+	xmom2 = (xmom+1)/2;
+        ymom2 = (ymom+1)/2;
        
-        if(zmom>0.00001){
+        if(zmom>0.2){
 	  lines++;
 	  //Print out seleted data and size of Nr_Hits
 	  cout << "iter = " << iter << endl;
 	  cout << "t = " << t << endl;
 	  cout << Nr_Hits.size() << endl;
 	  
-	  output = {theta2, phi2};
+	  output = {xmom2, ymom2};
 
 	  NN.feedForward(Nr_Hits);
 	  
@@ -154,7 +154,7 @@ void trainLocalisation() {
 	  std::cout << "Given output : " << output[0] << ", " << output[1];
 	  std::cout << "\nResult : " << res[0] << ", " << res[1];
 	  std::cout << "\nError : " << NN.getError() << "\n\n";
-	  file << theta << "    " << phi << "    " << res[0] << "    " << res[1] << "    " << NN.getError() << endl;           
+	  file << xmom2 << "    " << ymom2 << "    " << res[0] << "    " << res[1] << "    " << NN.getError() << endl;           
 	}
 	
         det.clear();

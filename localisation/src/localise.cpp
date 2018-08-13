@@ -1,4 +1,5 @@
 /*
+** name: localise.cpp
 ** author : Nirmal Kumar Iyer
 ** email : nkiyer@kth.se
 */
@@ -77,7 +78,7 @@ void trainLocalisation(int case_nr) {
     string path_database;
     path_database = "/media/nirmal/B856D99F56D95EA6/SPHiNX/localisation_runs/05_01_smallergrid_withContourShield/Hits/";
     string suffix_database;
-   suffix_database = "_FeisCode.root";
+    suffix_database = "_FeisCode.root";
     string filename_database;
 
     //vector for storing chi2 results per mac
@@ -184,12 +185,12 @@ void testLocalisation() {
     string path_database;
     path_database = "/media/nirmal/B856D99F56D95EA6/SPHiNX/localisation_runs/05_01_smallergrid_withContourShield/Hits/";
     string suffix_database;
-   suffix_database = "_FeisCode.root";
+    suffix_database = "_FeisCode.root";
     string filename_database;
     string path_test;
     path_test = "/media/nirmal/B856D99F56D95EA6/SPHiNX/localisation_runs/18_01_randompoints_withContourShield/Hits/";
     string suffix_test;
-   suffix_test = "_FeisCode.root";
+    suffix_test = "_FeisCode.root";
     string filename_test;
     filename_test = path_database + "Hits" + to_string(test_run) + suffix_database;
 
