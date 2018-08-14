@@ -42,7 +42,7 @@ void read(string filename, Float_t &theta, Float_t &phi, Float_t &x_mom, Float_t
         t3->GetEntry(i);
     }
     //Only use starting positions on the sphere
-    if(z_mom>0.2){
+    if(z_mom>0.36){
         TTree *t6 = (TTree*) f1.Get("one_hit");
         t6->SetBranchAddress("detector",&help_det);
         t6->SetBranchAddress("Nr_Hits",&help_NrHits);
@@ -72,9 +72,8 @@ void read(string filename, Float_t &theta, Float_t &phi, Float_t &x_mom, Float_t
 //Train function
 void trainLocalisation() {
     ofstream file;
-    string filename_iter = "NN_data_TANHL_2.dat";
-    string filename_output = "testlocalisation_TANHL_2.nn";
-    file.open(filename_iter.c_str());
+    string filename_iter = "NN_data_TANHL_2_epoch_"+to_string(epoch)+".dat";
+    string filename_output = "testlocalisation_TANHL_2_epoch_"+to_string(epoch)+".dat";
 
     //Running parameters
     int nr_runs = 40400;
@@ -125,18 +124,21 @@ void trainLocalisation() {
     //Reading vectors and variables
     vector <double> output;
     double xmom2, ymom2;
+
+    for(int epoch = 1; epoch <= 50; epoch ++){
+      file.open(filename_iter.c_str());
       
-    while (true) {
+      while (true) {
       
 	t = a[iter];
         filename_database = path_database + "Hits" + to_string(t) + suffix_database;
         read(filename_database, theta, phi, xmom, ymom, zmom ,det,Nr_Hits);
-
+	
 	//Normalize cartesian variables
 	xmom2 = (xmom+1)/2;
         ymom2 = (ymom+1)/2;
-       
-        if(zmom>0.2){
+	
+        if(zmom>0.36){
 	  lines++;
 	  //Print out seleted data and size of Nr_Hits
 	  cout << "iter = " << iter << endl;
@@ -144,11 +146,11 @@ void trainLocalisation() {
 	  cout << Nr_Hits.size() << endl;
 	  
 	  output = {xmom2, ymom2};
-
+	  
 	  NN.feedForward(Nr_Hits);
 	  
 	  NN.backProp(output);
-	    
+	  
 	  std::vector<double> res;
 	  NN.getResults(res);
 	  std::cout << "Given output : " << output[0] << ", " << output[1];
@@ -159,16 +161,21 @@ void trainLocalisation() {
 	
         det.clear();
         Nr_Hits.clear();
-
+	
 	iter++;
 	
 	if(iter > nr_runs){
 	  NN.writeNNToFile(filename_output.c_str());
 	  break;
 	}
+
+      }
+
+      file << lines << endl;
+      file.close();
+      
     }
-    file << lines << endl;
-    file.close();   
+    
 }
 
 int main(){
