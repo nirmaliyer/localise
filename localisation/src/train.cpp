@@ -71,110 +71,170 @@ void read(string filename, Float_t &theta, Float_t &phi, Float_t &x_mom, Float_t
 
 //Train function
 void trainLocalisation() {
-    ofstream file;
-    string filename_iter = "NN_data_TANHL_2_epoch_"+to_string(epoch)+".dat";
-    string filename_output = "testlocalisation_TANHL_2_epoch_"+to_string(epoch)+".dat";
+  ofstream file;
+  int epoch = 1;
+  string filename_iter = "NN_data_TANHL_2_epoch_"+to_string(epoch)+".dat";
+  string filename_output = "testlocalisation_TANHL_2_epoch_"+to_string(epoch)+".nn";
+  file.open(filename_iter.c_str());
 
-    //Running parameters
-    int nr_runs = 40400;
-
-    //Random shuffle vector
-    int a[nr_runs];
-    for(int i = 0; i < nr_runs; i++)
-      a[i] = i;
+  //Running parameters
+  int nr_runs = 40400;
+  
+  //Random shuffle vector
+  int a[nr_runs];
+  for(int i = 0; i < nr_runs; i++)
+    a[i] = i;
     
-    random_shuffle(&a[0],&a[nr_runs-1]);
+  random_shuffle(&a[0],&a[nr_runs-1]);
     
-    string path_database;
-    path_database = "/media/nirmal/B856D99F56D95EA6/SPHiNX/localisation_runs/05_01_smallergrid_withContourShield/Hits/";
-    string suffix_database;
-    suffix_database = "_FeisCode.root";
-    string filename_database;
-
-    //vector for storing chi2 results per mac
-    Float_t xmom=0;
-    Float_t ymom=0;
-    Float_t zmom=0;
-    Float_t theta=0;
-    Float_t phi=0;
+  string path_database;
+  path_database = "/media/nirmal/B856D99F56D95EA6/SPHiNX/localisation_runs/05_01_smallergrid_withContourShield/Hits/";
+  string suffix_database;
+  suffix_database = "_FeisCode.root";
+  string filename_database;
+  
+  //vector for storing chi2 results per mac
+  Float_t xmom=0;
+  Float_t ymom=0;
+  Float_t zmom=0;
+  Float_t theta=0;
+  Float_t phi=0;
    
-    std::vector<size_t> topo;
-    std::vector<double> eta;
-    std::vector<double> alpha;
-    std::vector<ActivationFunction> actFuns;
-    vector<double> det, Nr_Hits;
+  std::vector<size_t> topo;
+  std::vector<double> eta;
+  std::vector<double> alpha;
+  std::vector<ActivationFunction> actFuns;
+  vector<double> det, Nr_Hits;
+  
+  //Backpropagation algorithm
+  topo = { 162, 2 };
+  eta = { 0.2, 0.2 };
+  alpha = { 0.5, 0.5 };
+  actFuns = { TANHL, TANHL };
+  
+  //Reading vectors and variables
+  vector <double> output;
+  double xmom2, ymom2;
+  
+  //Iteration counter
+  int iter = 0;
+  //Writen events counter
+  int lines = 0;
+  //Data selector
+  int t;
+  
+  //Initialize Neural Network
+  NeuralNetwork NN;
+  NN.init(topo, eta, alpha, actFuns);
+  
+  while (true) {
     
-    //Backpropagation algorithm
-    topo = { 162, 2 };
-    eta = { 0.2, 0.2 };
-    alpha = { 0.5, 0.5 };
-    actFuns = { TANHL, TANHL };
-   
-    //Initialize Neural Network
-    NeuralNetwork NN;
-    NN.init(topo, eta, alpha, actFuns);
-   
-    //Iteration counter
-    int iter = 0;
-    //Writen events counter
-    int lines = 0;
-    //Data selector
-    int t;
-
-    //Reading vectors and variables
-    vector <double> output;
-    double xmom2, ymom2;
-
-    for(int epoch = 1; epoch <= 50; epoch ++){
-      file.open(filename_iter.c_str());
+    t = a[iter];
+    filename_database = path_database + "Hits" + to_string(t) + suffix_database;
+    read(filename_database, theta, phi, xmom, ymom, zmom ,det,Nr_Hits);
+    
+    //Normalize cartesian variables
+    xmom2 = (xmom+1)/2;
+    ymom2 = (ymom+1)/2;
+    
+    if(zmom>0.36){
+      lines++;
+      //Print out seleted data and size of Nr_Hits
+      cout << "iter = " << iter << endl;
+      cout << "t = " << t << endl;
+      cout << Nr_Hits.size() << endl;
       
-      while (true) {
+      output = {xmom2, ymom2};
       
-	t = a[iter];
-        filename_database = path_database + "Hits" + to_string(t) + suffix_database;
-        read(filename_database, theta, phi, xmom, ymom, zmom ,det,Nr_Hits);
-	
-	//Normalize cartesian variables
-	xmom2 = (xmom+1)/2;
-        ymom2 = (ymom+1)/2;
-	
-        if(zmom>0.36){
-	  lines++;
-	  //Print out seleted data and size of Nr_Hits
-	  cout << "iter = " << iter << endl;
-	  cout << "t = " << t << endl;
-	  cout << Nr_Hits.size() << endl;
-	  
-	  output = {xmom2, ymom2};
-	  
-	  NN.feedForward(Nr_Hits);
-	  
-	  NN.backProp(output);
-	  
-	  std::vector<double> res;
-	  NN.getResults(res);
-	  std::cout << "Given output : " << output[0] << ", " << output[1];
-	  std::cout << "\nResult : " << res[0] << ", " << res[1];
-	  std::cout << "\nError : " << NN.getError() << "\n\n";
-	  file << xmom2 << "    " << ymom2 << "    " << res[0] << "    " << res[1] << "    " << NN.getError() << endl;           
-	}
-	
-        det.clear();
-        Nr_Hits.clear();
-	
-	iter++;
-	
-	if(iter > nr_runs){
-	  NN.writeNNToFile(filename_output.c_str());
-	  break;
-	}
+      NN.feedForward(Nr_Hits);
+      
+      NN.backProp(output);
+      
+      std::vector<double> res;
+      NN.getResults(res);
+      std::cout << "Given output : " << output[0] << ", " << output[1];
+      std::cout << "\nResult : " << res[0] << ", " << res[1];
+      std::cout << "\nError : " << NN.getError() << "\n\n";
+      file << xmom2 << "    " << ymom2 << "    " << res[0] << "    " << res[1] << "    " << NN.getError() << endl;           
+    }
+    
+    det.clear();
+    Nr_Hits.clear();
+    
+    iter++;
+    
+    if(iter > nr_runs){
+      NN.writeNNToFile(filename_output.c_str());
+      break;
+    }
+  }
 
+  file << lines << endl;
+  file.close();
+
+  for(epoch = 2; epoch <= 50; epoch ++){
+
+    //Take previous Neural Network
+    NN.readNNFromFile("testlocalisation_TANHL_2_epoch_"+to_string(epoch-1)+".nn");
+
+    //Reinitialize strings
+    filename_iter = "NN_data_TANHL_2_epoch_"+to_string(epoch)+".dat";
+    filename_output =  "testlocalisation_TANHL_2_epoch_"+to_string(epoch)+".nn";
+
+    //Reinitialize counters
+    iter = 0;
+    lines = 0;
+
+    //Open new NN data file
+    file.open(filename_iter.c_str());
+
+    while (true) {
+    
+      t = a[iter];
+      filename_database = path_database + "Hits" + to_string(t) + suffix_database;
+      read(filename_database, theta, phi, xmom, ymom, zmom ,det,Nr_Hits);
+      
+      //Normalize cartesian variables
+      xmom2 = (xmom+1)/2;
+      ymom2 = (ymom+1)/2;
+      
+      if(zmom>0.36){
+	lines++;
+	//Print out seleted data and size of Nr_Hits
+	cout << "iter = " << iter << endl;
+	cout << "t = " << t << endl;
+	cout << Nr_Hits.size() << endl;
+	
+	output = {xmom2, ymom2};
+	
+	NN.feedForward(Nr_Hits);
+	
+	NN.backProp(output);
+	
+	std::vector<double> res;
+	NN.getResults(res);
+	std::cout << "Given output : " << output[0] << ", " << output[1];
+	std::cout << "\nResult : " << res[0] << ", " << res[1];
+	std::cout << "\nError : " << NN.getError() << "\n\n";
+	file << xmom2 << "    " << ymom2 << "    " << res[0] << "    " << res[1] << "    " << NN.getError() << endl;           
+      }
+      
+      det.clear();
+      Nr_Hits.clear();
+      
+      iter++;
+      
+      if(iter > nr_runs){
+	NN.writeNNToFile(filename_output.c_str());
+	break;
       }
 
-      file << lines << endl;
-      file.close();
-      
     }
+    
+    file << lines << endl;
+    file.close(); 
+    
+  }
     
 }
 
