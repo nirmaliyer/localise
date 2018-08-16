@@ -20,7 +20,7 @@ using namespace std;
 void ang_dist(){
 
   //Declare value vectors
-  Int_t nr_iter = 27345, nr_inpoints = 23224, nr_layers = 3, epoch = 2;
+  Int_t nr_iter = 27345, nr_inpoints = 27198, nr_layers = 3, epoch = 1;
   Float_t inpoints[nr_inpoints], real_xmom[nr_inpoints], real_ymom[nr_inpoints], real_zmom[nr_inpoints], real_xy[nr_inpoints], real_azimuth[nr_inpoints], out_xmom[nr_inpoints], out_ymom[nr_inpoints], out_zmom[nr_inpoints], out_xy[nr_inpoints], out_azimuth[nr_inpoints], ang_dist[nr_inpoints], error[nr_inpoints];
  
   //Data file stream
@@ -38,27 +38,33 @@ void ang_dist(){
   Int_t inside = 0;
   //Read data file
   Int_t nlines = 0;
-  //Counter for errors <= 10^-4
+  //Counter for errors <= 0.01
   Int_t small_error = 0;
+  //Denormalization variables
+  Float_t real_x2, real_y2, out_x2, out_y2;
   while (1){
     //Get the five columns
     in >> real_x >> real_y >> out_x >> out_y >> err;
+    real_x2 = 2*real_x-1;
+    real_y2 = 2*real_y-1;
+    out_x2 = 2*out_x-1;
+    out_y2 = 2*out_y-1;
     if(!in.good()) break;
     if(nlines < nr_iter){
       //Fill the data vectors
-      if(out_x*out_x + out_y*out_y > 1){
+      if(out_x2*out_x2 + out_y2*out_y2 > 1){
 	outside++;
       }
       else{
 	inpoints[inside] = (float)inside+1;
-	real_xmom[inside] = real_x;
-	real_ymom[inside] = real_y;
+	real_xmom[inside] = real_x2;
+	real_ymom[inside] = real_y2;
 	real_zmom[inside] = TMath::Sqrt(1-real_xmom[inside]*real_xmom[inside]-real_ymom[inside]*real_ymom[inside]);
 	real_xy[inside] = TMath::Sqrt(real_xmom[inside]*real_xmom[inside]+real_ymom[inside]*real_ymom[inside]);
 	real_azimuth[inside] = TMath::ATan2(real_ymom[inside], real_xmom[inside]);
 
-	out_xmom[inside] = out_x;
-	out_ymom[inside] = out_y;
+	out_xmom[inside] = out_x2;
+	out_ymom[inside] = out_y2;
 	out_zmom[inside] = TMath::Sqrt(1-out_xmom[inside]*out_xmom[inside]-out_ymom[inside]*out_ymom[inside]);
 	out_xy[inside] = TMath::Sqrt(out_xmom[inside]*out_xmom[inside]+out_ymom[inside]*out_ymom[inside]);
 	out_azimuth[inside] = TMath::ATan2(out_ymom[inside], out_xmom[inside]);
@@ -126,7 +132,7 @@ void ang_dist(){
   ERvsOP->SetTitle("Error vs Output azimuth");
   
   //draw graphs 
-  TCanvas *angdist = new TCanvas("Angle vs XY-distance & Azimuth (3 layers epoch 2)","Angle vs XY-distance & Azimuth (3 layers epoch 2)");
+  TCanvas *angdist = new TCanvas("Angle vs XY-distance & Azimuth (3 layers epoch 1)","Angle vs XY-distance & Azimuth (3 layers epoch 1)");
   angdist->Divide(2,2);
   angdist->cd(1);
   ADvsRR->Draw("ap");
@@ -137,7 +143,7 @@ void ang_dist(){
   angdist->cd(4);
   ADvsOP->Draw("ap");
 
-  TCanvas *errdist = new TCanvas("Error vs XY-distance & Azimuth (3 layers epoch 2)","Error vs XY-distance & Azimuth (3 layers epoch 2)");
+  TCanvas *errdist = new TCanvas("Error vs XY-distance & Azimuth (3 layers epoch 1)","Error vs XY-distance & Azimuth (3 layers epoch 1)");
   errdist->Divide(2,2);
   errdist->cd(1);
   ERvsRR->Draw("ap");
@@ -148,10 +154,10 @@ void ang_dist(){
   errdist->cd(4);
   ERvsOP->Draw("ap");
 
-  TCanvas *angit = new TCanvas("Angle vs Iterations (3 layers epoch 2)","Angle vs Iterations (3 layers epoch 2)");
+  TCanvas *angit = new TCanvas("Angle vs Iterations (3 layers epoch 1)","Angle vs Iterations (3 layers epoch 1)");
   ADvsIT->Draw("ap");
 
-  TCanvas *errit = new TCanvas("Error vs Iterations (3 layers epoch 2)","Error vs Iterations (3 layers epoch 2)");
+  TCanvas *errit = new TCanvas("Error vs Iterations (3 layers epoch 1)","Error vs Iterations (3 layers epoch 1)");
   ERvsIT->Draw("ap");
   
   return;
