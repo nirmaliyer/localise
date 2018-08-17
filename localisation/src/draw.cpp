@@ -32,12 +32,13 @@ void draw(){
   in_3.open("/home/joan/git_joan_localise/localise/localisation/build/NN_data_TANHL_3.dat", ios::in);
 
   //Create temporary use variables
-  Float_t real_x2_2, real_y2_2, out_x2_2, out_y2_2, err_2, real_x2_3, real_y2_3, out_x2_3, out_y2_3, err_3;
+  Float_t real_x2_2, real_y2_2, real_z_2, out_x2_2, out_y2_2, err_2, real_x2_3, real_y2_3, real_z_3, out_x2_3, out_y2_3, err_3;
+  Int_t t_2, t_3;
  
   Int_t nlines_2 = 0;
   while (1){
     //Get the five columns
-    in_2 >> real_x2_2 >> real_y2_2 >> out_x2_2 >> out_y2_2 >> err_2;
+    in_2 >> real_x2_2 >> real_y2_2 >> real_z_2 >> t_2 >> out_x2_2 >> out_y2_2 >> err_2;
     if(!in_2.good()) break;
     if(nlines_2 < nr_iter)
     //Fill the data vectors
@@ -54,7 +55,7 @@ void draw(){
   Int_t nlines_3 = 0;
   while (1){
     //Get the five columns
-    in_3 >> real_x2_3 >> real_y2_3 >> out_x2_3 >> out_y2_3 >> err_3;
+    in_3 >> real_x2_3 >> real_y2_3 >> real_z_3 >> t_3 >> out_x2_3 >> out_y2_3 >> err_3;
     if(!in_3.good()) break;
     if(nlines_3 < nr_iter)
     //Fill the data vectors

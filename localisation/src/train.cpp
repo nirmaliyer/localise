@@ -172,7 +172,7 @@ void trainLocalisation() {
   file << lines << endl;
   file.close();
 
-  for(epoch = 2; epoch <= 2; epoch ++){
+  for(epoch = 2; epoch <= 50; epoch ++){
 
     //Take previous Neural Network
     NN.readNNFromFile("testlocalisation_TANHL_3_epoch_"+to_string(epoch-1)+".nn");
