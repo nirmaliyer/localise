@@ -37,7 +37,7 @@ void statistics(){
   for(Int_t epoch = 1; epoch <= nr_epochs; epoch ++){
 
     //Open data file
-    in.open("/home/joan/git_joan_localise/localise/localisation/build/NN_data_TANHL_2_epoch_"+to_string(epoch)+".dat", ios::in);
+    in.open("/home/joan/git_joan_localise/localise/localisation/build/NN_data_TANHL_3_epoch_"+to_string(epoch)+".dat", ios::in);
 
     //Create temporary use variables
     Float_t real_x2, real_y2, real_z, out_x, out_y, err;

@@ -73,8 +73,8 @@ void read(string filename, Float_t &theta, Float_t &phi, Float_t &x_mom, Float_t
 void trainLocalisation() {
   ofstream file;
   int epoch = 1;
-  string filename_iter = "NN_data_TANHL_3_epoch_"+to_string(epoch)+".dat";
-  string filename_output = "testlocalisation_TANHL_3_epoch_"+to_string(epoch)+".nn";
+  string filename_iter = "NN_data_TANHL_2_epoch_"+to_string(epoch)+".dat";
+  string filename_output = "testlocalisation_TANHL_2_epoch_"+to_string(epoch)+".nn";
   file.open(filename_iter.c_str());
 
   //Running parameters
@@ -107,10 +107,10 @@ void trainLocalisation() {
   vector<double> det, Nr_Hits;
   
   //Backpropagation algorithm
-  topo = { 162, 162, 2 };
-  eta = { 0.2, 0.2, 0.2 };
-  alpha = { 0.5, 0.5, 0.5 };
-  actFuns = { TANHL, TANHL, TANHL };
+  topo = { 162, 2 };
+  eta = { 0.2, 0.2 };
+  alpha = { 0.5, 0.5 };
+  actFuns = { TANHL, TANHL };
   
   //Reading vectors and variables
   vector <double> output;
@@ -175,11 +175,11 @@ void trainLocalisation() {
   for(epoch = 2; epoch <= 50; epoch ++){
 
     //Take previous Neural Network
-    NN.readNNFromFile("testlocalisation_TANHL_3_epoch_"+to_string(epoch-1)+".nn");
+    NN.readNNFromFile("testlocalisation_TANHL_2_epoch_"+to_string(epoch-1)+".nn");
 
     //Reinitialize strings
-    filename_iter = "NN_data_TANHL_3_epoch_"+to_string(epoch)+".dat";
-    filename_output =  "testlocalisation_TANHL_3_epoch_"+to_string(epoch)+".nn";
+    filename_iter = "NN_data_TANHL_2_epoch_"+to_string(epoch)+".dat";
+    filename_output =  "testlocalisation_TANHL_2_epoch_"+to_string(epoch)+".nn";
 
     //Reinitialize counters
     iter = 0;

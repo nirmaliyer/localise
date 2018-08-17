@@ -20,7 +20,7 @@ using namespace std;
 void ang_dist(){
 
   //Declare value vectors
-  Int_t nr_iter = 27345, nr_inpoints = 27198, nr_layers = 3, epoch = 1;
+  Int_t nr_iter = 27345, nr_inpoints = 27332, nr_layers = 3, epoch = 2;
   Float_t inpoints[nr_inpoints], real_xmom[nr_inpoints], real_ymom[nr_inpoints], real_zmom[nr_inpoints], real_xy[nr_inpoints], real_azimuth[nr_inpoints], out_xmom[nr_inpoints], out_ymom[nr_inpoints], out_zmom[nr_inpoints], out_xy[nr_inpoints], out_azimuth[nr_inpoints], ang_dist[nr_inpoints], error[nr_inpoints];
  
   //Data file stream

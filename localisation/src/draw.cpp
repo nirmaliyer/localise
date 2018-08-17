@@ -19,7 +19,7 @@ using namespace std;
 void draw(){
 
   //Declare value vectors
-  Int_t nr_iter = 30197;
+  Int_t nr_iter = 27345;
   Float_t iter[nr_iter], real_xmom_2[nr_iter], real_ymom_2[nr_iter], out_xmom_2[nr_iter], out_ymom_2[nr_iter], error_2[nr_iter], real_xmom_3[nr_iter], real_ymom_3[nr_iter], out_xmom_3[nr_iter], out_ymom_3[nr_iter], error_3[nr_iter],r_i[nr_iter],r_o[nr_iter] ;
  
   //Fill iterations vector
@@ -28,8 +28,8 @@ void draw(){
  
   //Open data files
   ifstream in_2, in_3;
-  in_2.open("/home/joan/git_joan_localise/localise/localisation/build/NN_data_TANHL_2.dat", ios::in);
-  in_3.open("/home/joan/git_joan_localise/localise/localisation/build/NN_data_TANHL_3.dat", ios::in);
+  in_2.open("/home/joan/git_joan_localise/localise/localisation/build/NN_data_TANHL_2_epoch_1.dat", ios::in);
+  in_3.open("/home/joan/git_joan_localise/localise/localisation/build/NN_data_TANHL_3_epoch_1.dat", ios::in);
 
   //Create temporary use variables
   Float_t real_x2_2, real_y2_2, real_z_2, out_x2_2, out_y2_2, err_2, real_x2_3, real_y2_3, real_z_3, out_x2_3, out_y2_3, err_3;
