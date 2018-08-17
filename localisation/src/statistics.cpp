@@ -115,6 +115,8 @@ int main(){
 
   statistics();
 
+  cout << endl << "Statistics program has been executed" << endl;
+
   return 0;
 
 }
