@@ -40,13 +40,14 @@ void statistics(){
     in.open("/home/joan/git_joan_localise/localise/localisation/build/NN_data_TANHL_2_epoch_"+to_string(epoch)+".dat", ios::in);
 
     //Create temporary use variables
-    Float_t real_x, real_y, out_x, out_y, err;
+    Float_t real_x2, real_y2, real_z, out_x, out_y, err;
+    Int_t t;
 
     //Read data file
     Int_t nlines = 0;
     while (1){
       //Get the five columns
-      in >> real_x >> real_y >> out_x >> out_y >> err;
+      in >> real_x2 >> real_y2 >> real_z >> t >> out_x >> out_y >> err;
       if(!in.good()) break;
       if(nlines < nr_iter)
 	//Fill the data vectors
