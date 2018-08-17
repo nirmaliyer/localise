@@ -155,7 +155,7 @@ void trainLocalisation() {
       std::cout << "Given output : " << output[0] << ", " << output[1];
       std::cout << "\nResult : " << res[0] << ", " << res[1];
       std::cout << "\nError : " << NN.getError() << "\n\n";
-      file << xmom2 << "    " << ymom2 << "    " << res[0] << "    " << res[1] << "    " << NN.getError() << endl;           
+      file << xmom2 << " " << ymom2 << " " << zmom << " " << t << " " << res[0] << " " << res[1] << " " << NN.getError() << endl;           
     }
     
     det.clear();
@@ -216,7 +216,7 @@ void trainLocalisation() {
 	std::cout << "Given output : " << output[0] << ", " << output[1];
 	std::cout << "\nResult : " << res[0] << ", " << res[1];
 	std::cout << "\nError : " << NN.getError() << "\n\n";
-	file << xmom2 << "    " << ymom2 << "    " << res[0] << "    " << res[1] << "    " << NN.getError() << endl;           
+	file << xmom2 << " " << ymom2 << " " << zmom << " " << t << " " << res[0] << " " << res[1] << " " << NN.getError() << endl;
       }
       
       det.clear();
