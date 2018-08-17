@@ -30,7 +30,8 @@ void ang_dist(){
   in.open("/home/joan/git_joan_localise/localise/localisation/build/NN_data_TANHL_"+to_string(nr_layers)+"_epoch_"+to_string(epoch)+".dat", ios::in);
   
   //Create temporary use variables
-  Float_t real_x, real_y, out_x, out_y, err;
+  Float_t real_x2, real_y2, real_z, out_x2, out_y2, err;
+  Int_t t;
 
   //Counter for output values outside the unit sphere
   Int_t outside = 0;
@@ -41,30 +42,30 @@ void ang_dist(){
   //Counter for errors <= 0.01
   Int_t small_error = 0;
   //Denormalization variables
-  Float_t real_x2, real_y2, out_x2, out_y2;
+  Float_t real_x, real_y, out_x, out_y;
   while (1){
     //Get the five columns
-    in >> real_x >> real_y >> out_x >> out_y >> err;
-    real_x2 = 2*real_x-1;
-    real_y2 = 2*real_y-1;
-    out_x2 = 2*out_x-1;
-    out_y2 = 2*out_y-1;
+    in >> real_x2 >> real_y2 >> real_z >> t >> out_x2 >> out_y2 >> err;
+    real_x = 2*real_x2-1;
+    real_y = 2*real_y2-1; 
+    out_x = 2*out_x2-1;
+    out_y = 2*out_y2-1;
     if(!in.good()) break;
     if(nlines < nr_iter){
       //Fill the data vectors
-      if(out_x2*out_x2 + out_y2*out_y2 > 1){
+      if(out_x*out_x + out_y*out_y > 1){
 	outside++;
       }
       else{
 	inpoints[inside] = (float)inside+1;
-	real_xmom[inside] = real_x2;
-	real_ymom[inside] = real_y2;
-	real_zmom[inside] = TMath::Sqrt(1-real_xmom[inside]*real_xmom[inside]-real_ymom[inside]*real_ymom[inside]);
+	real_xmom[inside] = real_x;
+	real_ymom[inside] = real_y;
+	real_zmom[inside] = real_z;
 	real_xy[inside] = TMath::Sqrt(real_xmom[inside]*real_xmom[inside]+real_ymom[inside]*real_ymom[inside]);
 	real_azimuth[inside] = TMath::ATan2(real_ymom[inside], real_xmom[inside]);
 
-	out_xmom[inside] = out_x2;
-	out_ymom[inside] = out_y2;
+	out_xmom[inside] = out_x;
+	out_ymom[inside] = out_y;
 	out_zmom[inside] = TMath::Sqrt(1-out_xmom[inside]*out_xmom[inside]-out_ymom[inside]*out_ymom[inside]);
 	out_xy[inside] = TMath::Sqrt(out_xmom[inside]*out_xmom[inside]+out_ymom[inside]*out_ymom[inside]);
 	out_azimuth[inside] = TMath::ATan2(out_ymom[inside], out_xmom[inside]);
