@@ -7,6 +7,7 @@
 
 #include "Neuron.h"
 #include <algorithm>
+#include "math.h"
 
 namespace NN {
 
