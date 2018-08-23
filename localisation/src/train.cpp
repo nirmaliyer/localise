@@ -7,6 +7,7 @@
 #include "TFile.h"
 #include "TBranch.h"
 #include "TTree.h"
+#include "TRandom.h"
 
 #include <iostream>
 #include <vector>
@@ -60,9 +61,6 @@ void read(string filename, Float_t &theta, Float_t &phi, Float_t &x_mom, Float_t
         help_det->clear();
         help_NrHits->clear();
     }
-    for(i=0;i<Nr_Hits.size();i++){
-        Nr_Hits[i] = Nr_Hits[i]/Hits_total;
-    }
 
     //Close input file
     delete t3;
@@ -73,8 +71,8 @@ void read(string filename, Float_t &theta, Float_t &phi, Float_t &x_mom, Float_t
 void trainLocalisation() {
   ofstream file;
   int epoch = 1;
-  string filename_iter = "NN_data_TANHL_2_epoch_"+to_string(epoch)+".dat";
-  string filename_output = "testlocalisation_TANHL_2_epoch_"+to_string(epoch)+".nn";
+  string filename_iter = "NN_data_TANHL_3_epoch_"+to_string(epoch)+"_Poisson.dat";
+  string filename_output = "testlocalisation_TANHL_3_epoch_"+to_string(epoch)+"_Poisson.nn";
   file.open(filename_iter.c_str());
 
   //Running parameters
@@ -107,10 +105,10 @@ void trainLocalisation() {
   vector<double> det, Nr_Hits;
   
   //Backpropagation algorithm
-  topo = { 162, 2 };
-  eta = { 0.2, 0.2 };
-  alpha = { 0.5, 0.5 };
-  actFuns = { TANHL, TANHL };
+  topo = { 162, 162, 2 };
+  eta = { 0.2, 0.2 , 0.2 };
+  alpha = { 0.5, 0.5 , 0.5 };
+  actFuns = { TANHL, TANHL , TANHL };
   
   //Reading vectors and variables
   vector <double> output;
@@ -126,12 +124,28 @@ void trainLocalisation() {
   //Initialize Neural Network
   NeuralNetwork NN;
   NN.init(topo, eta, alpha, actFuns);
+
+  //Declare random pointer
+  TRandom *random = new TRandom();
   
   while (true) {
     
-    t = a[iter];
+    t = a[0];
     filename_database = path_database + "Hits" + to_string(t) + suffix_database;
     read(filename_database, theta, phi, xmom, ymom, zmom ,det,Nr_Hits);
+
+    //Declare sum
+    double Total_Hits = 0;
+
+    //Randomization
+    for (int i = 0; i < Nr_Hits.size(); i++){
+      Nr_Hits[i] = random->Poisson(Nr_Hits[i]);
+      Total_Hits += Nr_Hits[i];
+    }
+
+    //Normalization
+    for(int i = 0; i < Nr_Hits.size(); i++)
+      Nr_Hits[i] = Nr_Hits[i]/Total_Hits;
     
     //Normalize cartesian variables
     xmom2 = (xmom+1)/2;
@@ -143,6 +157,7 @@ void trainLocalisation() {
       cout << "iter = " << iter << endl;
       cout << "t = " << t << endl;
       cout << Nr_Hits.size() << endl;
+      cout << "Total Hits = " << Total_Hits << endl;
       
       output = {xmom2, ymom2};
       
@@ -172,69 +187,69 @@ void trainLocalisation() {
   file << lines << endl;
   file.close();
 
-  for(epoch = 2; epoch <= 50; epoch ++){
+  // for(epoch = 2; epoch <= 50; epoch ++){
 
-    //Take previous Neural Network
-    NN.readNNFromFile("testlocalisation_TANHL_2_epoch_"+to_string(epoch-1)+".nn");
+  //   //Take previous Neural Network
+  //   NN.readNNFromFile("testlocalisation_TANHL_2_epoch_"+to_string(epoch-1)+".nn");
 
-    //Reinitialize strings
-    filename_iter = "NN_data_TANHL_2_epoch_"+to_string(epoch)+".dat";
-    filename_output =  "testlocalisation_TANHL_2_epoch_"+to_string(epoch)+".nn";
+  //   //Reinitialize strings
+  //   filename_iter = "NN_data_TANHL_2_epoch_"+to_string(epoch)+".dat";
+  //   filename_output =  "testlocalisation_TANHL_2_epoch_"+to_string(epoch)+".nn";
 
-    //Reinitialize counters
-    iter = 0;
-    lines = 0;
+  //   //Reinitialize counters
+  //   iter = 0;
+  //   lines = 0;
 
-    //Open new NN data file
-    file.open(filename_iter.c_str());
+  //   //Open new NN data file
+  //   file.open(filename_iter.c_str());
 
-    while (true) {
+  //   while (true) {
     
-      t = a[iter];
-      filename_database = path_database + "Hits" + to_string(t) + suffix_database;
-      read(filename_database, theta, phi, xmom, ymom, zmom ,det,Nr_Hits);
+  //     t = a[iter];
+  //     filename_database = path_database + "Hits" + to_string(t) + suffix_database;
+  //     read(filename_database, theta, phi, xmom, ymom, zmom ,det,Nr_Hits);
       
-      //Normalize cartesian variables
-      xmom2 = (xmom+1)/2;
-      ymom2 = (ymom+1)/2;
+  //     //Normalize cartesian variables
+  //     xmom2 = (xmom+1)/2;
+  //     ymom2 = (ymom+1)/2;
       
-      if(zmom>0.36){
-	lines++;
-	//Print out seleted data and size of Nr_Hits
-	cout << "iter = " << iter << endl;
-	cout << "t = " << t << endl;
-	cout << Nr_Hits.size() << endl;
+  //     if(zmom>0.36){
+  // 	lines++;
+  // 	//Print out seleted data and size of Nr_Hits
+  // 	cout << "iter = " << iter << endl;
+  // 	cout << "t = " << t << endl;
+  // 	cout << Nr_Hits.size() << endl;
 	
-	output = {xmom2, ymom2};
+  // 	output = {xmom2, ymom2};
 	
-	NN.feedForward(Nr_Hits);
+  // 	NN.feedForward(Nr_Hits);
 	
-	NN.backProp(output);
+  // 	NN.backProp(output);
 	
-	std::vector<double> res;
-	NN.getResults(res);
-	std::cout << "Given output : " << output[0] << ", " << output[1];
-	std::cout << "\nResult : " << res[0] << ", " << res[1];
-	std::cout << "\nError : " << NN.getError() << "\n\n";
-	file << xmom2 << " " << ymom2 << " " << zmom << " " << t << " " << res[0] << " " << res[1] << " " << NN.getError() << endl;
-      }
+  // 	std::vector<double> res;
+  // 	NN.getResults(res);
+  // 	std::cout << "Given output : " << output[0] << ", " << output[1];
+  // 	std::cout << "\nResult : " << res[0] << ", " << res[1];
+  // 	std::cout << "\nError : " << NN.getError() << "\n\n";
+  // 	file << xmom2 << " " << ymom2 << " " << zmom << " " << t << " " << res[0] << " " << res[1] << " " << NN.getError() << endl;
+  //     }
       
-      det.clear();
-      Nr_Hits.clear();
+  //     det.clear();
+  //     Nr_Hits.clear();
       
-      iter++;
+  //     iter++;
       
-      if(iter > nr_runs){
-	NN.writeNNToFile(filename_output.c_str());
-	break;
-      }
+  //     if(iter > nr_runs){
+  // 	NN.writeNNToFile(filename_output.c_str());
+  // 	break;
+  //     }
 
-    }
+  //   }
     
-    file << lines << endl;
-    file.close(); 
+  //   file << lines << endl;
+  //   file.close(); 
     
-  }
+  // }
     
 }
 
@@ -247,3 +262,4 @@ int main(){
   return 0;
 
 }
+
