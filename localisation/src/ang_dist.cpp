@@ -20,18 +20,18 @@ using namespace std;
 void ang_dist(){
 
   //Declare value vectors
-  Int_t nr_iter = 27345, nr_inpoints = 27345, nr_layers = 2, epoch = 1;
+  Int_t nr_iter = 190464, nr_inpoints = 188394, nr_layers = 3, epoch = 1;
   Float_t inpoints[nr_inpoints], real_xmom[nr_inpoints], real_ymom[nr_inpoints], real_zmom[nr_inpoints], real_xy[nr_inpoints], real_azimuth[nr_inpoints], out_xmom[nr_inpoints], out_ymom[nr_inpoints], out_zmom[nr_inpoints], out_xy[nr_inpoints], out_azimuth[nr_inpoints], ang_dist[nr_inpoints], error[nr_inpoints];
  
   //Data file stream
   ifstream in;
 
   //Open data file
-  in.open("/home/joan/git_joan_localise/localise/localisation/build/NN_data_TANHL_"+to_string(nr_layers)+"_epoch_"+to_string(epoch)+".dat", ios::in);
+  in.open("/home/joan/git_joan_localise/localise/localisation/build/NN_data_TANHL_conv_"+to_string(nr_layers)+"_epoch_"+to_string(epoch)+".dat", ios::in);
   
   //Create temporary use variables
   Float_t real_x2, real_y2, real_z, out_x2, out_y2, err;
-  Int_t t;
+  Int_t t, conv;
 
   //Counter for output values outside the unit sphere
   Int_t outside = 0;
@@ -45,7 +45,7 @@ void ang_dist(){
   Float_t real_x, real_y, out_x, out_y;
   while (1){
     //Get the five columns
-    in >> real_x2 >> real_y2 >> real_z >> t >> out_x2 >> out_y2 >> err;
+    in >> real_x2 >> real_y2 >> real_z >> t >> conv >> out_x2 >> out_y2 >> err;
     real_x = 2*real_x2-1;
     real_y = 2*real_y2-1; 
     out_x = 2*out_x2-1;

@@ -72,8 +72,8 @@ void trainLocalisation() {
   ofstream file;
 
   //Configuration
-  string function = "TANHL_conv";
-  int nr_layers = 3;
+  string function = "LEAKY_RELU_conv";
+  int nr_layers = 2;
   int nr_epochs = 2;
   
   int epoch = 1;
@@ -111,10 +111,10 @@ void trainLocalisation() {
   vector<double> det, Nr_Hits;
   
   //Backpropagation algorithm
-  topo = { 162, 162, 2 };
-  eta = { 0.2, 0.2, 0.2 };
-  alpha = { 0.5, 0.5, 0.5 };
-  actFuns = { TANHL, TANHL, TANHL };
+  topo = { 162, 2 };
+  eta = { 0.2, 0.2 };
+  alpha = { 0.5, 0.5 };
+  actFuns = { LEAKY_RELU, LEAKY_RELU };
   
   //Reading vectors and variables
   vector <double> output;
@@ -135,17 +135,20 @@ void trainLocalisation() {
 
   //Declare random pointer
   TRandom *random = new TRandom();
+
+  //Error vector
+  double errors[5];
   
   while (true) {
     
     t = a[iter];
     conv = 0;
-
-    //Read file
     filename_database = path_database + "Hits" + to_string(t) + suffix_database;
-    read(filename_database, theta, phi, xmom, ymom, zmom ,det,Nr_Hits);
 
     while (true){
+
+      //Read file
+      read(filename_database, theta, phi, xmom, ymom, zmom ,det,Nr_Hits);
       
       //Declare sum
       double Total_Hits = 0;
@@ -183,11 +186,8 @@ void trainLocalisation() {
 	NN.getResults(res);
 	std::cout << "Given output : " << output[0] << ", " << output[1];
 	std::cout << "\nResult : " << res[0] << ", " << res[1];
-	std::cout << "\nError : " << NN.getError() << "\n\n";
+	std::cout << "\nError : " << NN.getError() << "\n";
 	file << xmom2 << " " << ymom2 << " " << zmom << " " << t << " " << conv << " " << res[0] << " " << res[1] << " " << NN.getError() << endl;
-
-	//Error vector
-	double errors[5];
 
 	//Fill error vector with the last 5 errors
 	errors[conv%5] = NN.getError();
@@ -200,18 +200,24 @@ void trainLocalisation() {
 
 	error_mean = error_mean/5;
 
+	cout << error_mean << endl << endl;
+
 	if(error_mean < 0.01){
 	  break;
 	}
 	else{
 	  conv++;
 	}
-      }
+      }//z-momentum of
       else{
 	break;
       }
-    }
       
+      det.clear();
+      Nr_Hits.clear();
+      
+    }//convergence while
+
     det.clear();
     Nr_Hits.clear();
       
@@ -221,7 +227,7 @@ void trainLocalisation() {
       NN.writeNNToFile(filename_output.c_str());
       break;
     }
-  }
+  }//event while
 
   random->Delete();
     
@@ -246,10 +252,28 @@ void trainLocalisation() {
 
     while (true) {
     
-      t = a[iter];
-      filename_database = path_database + "Hits" + to_string(t) + suffix_database;
+    t = a[iter];
+    conv = 0;
+    filename_database = path_database + "Hits" + to_string(t) + suffix_database;
+
+    while (true){
+
+      //Read file
       read(filename_database, theta, phi, xmom, ymom, zmom ,det,Nr_Hits);
       
+      //Declare sum
+      double Total_Hits = 0;
+
+      //Randomization
+      for (int i = 0; i < Nr_Hits.size(); i++){
+	Nr_Hits[i] = random->Poisson(Nr_Hits[i]);
+	Total_Hits += Nr_Hits[i];
+      }
+
+      //Normalization
+      for(int i = 0; i < Nr_Hits.size(); i++)
+	Nr_Hits[i] = Nr_Hits[i]/Total_Hits;
+    
       //Normalize cartesian variables
       xmom2 = (xmom+1)/2;
       ymom2 = (ymom+1)/2;
@@ -259,7 +283,9 @@ void trainLocalisation() {
 	//Print out seleted data and size of Nr_Hits
 	cout << "iter = " << iter << endl;
 	cout << "t = " << t << endl;
+	cout << "conv = " << conv << endl;
 	cout << Nr_Hits.size() << endl;
+	cout << "Total Hits = " << Total_Hits << endl;
 	
 	output = {xmom2, ymom2};
 	
@@ -271,24 +297,53 @@ void trainLocalisation() {
 	NN.getResults(res);
 	std::cout << "Given output : " << output[0] << ", " << output[1];
 	std::cout << "\nResult : " << res[0] << ", " << res[1];
-	std::cout << "\nError : " << NN.getError() << "\n\n";
-	file << xmom2 << " " << ymom2 << " " << zmom << " " << t << " " << res[0] << " " << res[1] << " " << NN.getError() << endl;
+	std::cout << "\nError : " << NN.getError() << "\n";
+	file << xmom2 << " " << ymom2 << " " << zmom << " " << t << " " << conv << " " << res[0] << " " << res[1] << " " << NN.getError() << endl;
+
+	//Fill error vector with the last 5 errors
+	errors[conv%5] = NN.getError();
+
+	//Check for convergence
+	double error_mean = 0;
+
+	for (int i = 0; i < 5; i++)
+	  error_mean += errors[i];
+
+	error_mean = error_mean/5;
+
+	cout << error_mean << endl << endl;
+
+	if(error_mean < 0.01){
+	  break;
+	}
+	else{
+	  conv++;
+	}
+      }//z-momentum of
+      else{
+	break;
       }
       
       det.clear();
       Nr_Hits.clear();
       
-      iter++;
-      
-      if(iter > nr_runs){
-	NN.writeNNToFile(filename_output.c_str());
-	break;
-      }
+    }//convergence while
 
+    det.clear();
+    Nr_Hits.clear();
+      
+    iter++;
+      
+    if(iter > nr_runs){
+      NN.writeNNToFile(filename_output.c_str());
+      break;
     }
+  }//event while
+
+  random->Delete();
     
-    file << lines << endl;
-    file.close(); 
+  file << lines << endl;
+  file.close();
     
   }
     
