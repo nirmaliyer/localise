@@ -21,7 +21,7 @@ void ang_dist(){
 
   //Declare value vectors
   Int_t nr_iter = 190464, nr_inpoints = 188394, nr_layers = 3, epoch = 1;
-  Float_t inpoints[nr_inpoints], real_xmom[nr_inpoints], real_ymom[nr_inpoints], real_zmom[nr_inpoints], real_xy[nr_inpoints], real_azimuth[nr_inpoints], out_xmom[nr_inpoints], out_ymom[nr_inpoints], out_zmom[nr_inpoints], out_xy[nr_inpoints], out_azimuth[nr_inpoints], ang_dist[nr_inpoints], error[nr_inpoints];
+  Float_t inpoints[nr_inpoints], real_xmom[nr_inpoints], real_ymom[nr_inpoints], real_zmom[nr_inpoints], real_xy[nr_inpoints], real_azimuth[nr_inpoints], out_xmom[nr_inpoints], out_ymom[nr_inpoints], out_zmom[nr_inpoints], out_xy[nr_inpoints], out_azimuth[nr_inpoints], ang_dist[nr_inpoints], error[nr_inpoints], convergence[nr_inpoints];
  
   //Data file stream
   ifstream in;
@@ -71,21 +71,8 @@ void ang_dist(){
 	out_azimuth[inside] = TMath::ATan2(out_ymom[inside], out_xmom[inside]);
 
 	error[inside] = err;
-	if(err <= 0.01)
-	  small_error++;
-
 	ang_dist[inside] = (180/TMath::Pi())*TMath::ACos(real_xmom[inside]*out_xmom[inside]+real_ymom[inside]*out_ymom[inside]+real_zmom[inside]*out_zmom[inside]);
-	//Small error vectors
-	// Float_t small_real_xmom[small_error], small_real_ymom[small_error], small_real_xy[small_error], small_real_xmom[small_error];
-	// Int_t j = 0;
-	
-	// for(Int_t i = 0; i < nr_inpoints; i++){
-	//   if(error[i] <= 0.01){
-	//     small[j] = error[i];
-	//     j++;
-	//   }
-	// }
-	
+	convergence[inside] = conv;
 	inside++;
 	  }
       nlines++;
@@ -98,7 +85,13 @@ void ang_dist(){
   cout << "Number of lines in NN_data_TANHL_"+to_string(nr_layers)+"_epoch_"+to_string(epoch)+".dat :" << nlines << endl;
   cout << "Number of output points outside the unit sphere: " << outside << endl;
   cout << "Number of output points inside the unit sphere: " << inside << endl;
-  cout << "Number of errors smaller or equal to 0.01: " << small_error << endl;
+
+  //5 iterations in the middle
+  Float_t five_iter[50], five_error[50];
+  for(Int_t i = 0; i < 50 ; i++){
+    five_iter[i] = inpoints[100000+i];
+    five_error[i] = error[100000+i];
+  }
   
   //Declare angle graphs
   TGraph *ADvsIT = new TGraph(nr_inpoints, inpoints, ang_dist);
@@ -160,6 +153,20 @@ void ang_dist(){
 
   TCanvas *errit = new TCanvas("Error vs Iterations (3 layers epoch 1)","Error vs Iterations (3 layers epoch 1)");
   ERvsIT->Draw("ap");
+
+  //Declare graphs
+  TGraph *ERvsIT5 = new TGraph(50, five_iter, five_error);
+  ERvsIT5->SetTitle("5 Error vs Iterations");
+
+  TGraph *CVGvsIT = new TGraph(nr_inpoints, inpoints, convergence);
+  CVGvsIT->SetTitle("Convergence vs Iterations");
+
+  //Draw graphs
+  TCanvas *five = new TCanvas("5 Error vs Iterations","5 Error vs Iterations");
+  ERvsIT5->Draw("al");
+
+  TCanvas *convergences = new TCanvas("Convergence vs Iterations","Convergence vs Iterations");
+  CVGvsIT->Draw("ap");
   
   return;
 
